@@ -47,25 +47,125 @@ button:hover{background:#ff2a33;}
 </div>
 </div>
 
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GT‑R R34 Smart Diagnosis – Lengkap</title>
+<style>
+body{font-family:Arial,sans-serif;background:#0b0b0b;color:#fff;margin:0;padding:0;}
+header{background:#e21b23;padding:18px;text-align:center;font-size:24px;font-weight:bold;}
+.container{max-width:900px;margin:30px auto;padding:20px;background:#111;border-radius:12px;box-shadow:0 0 15px rgba(226,27,35,0.5);}
+.tabs{display:flex;margin-bottom:15px;}
+.tab{flex:1;padding:12px;text-align:center;background:#222;cursor:pointer;border-radius:8px 8px 0 0;margin-right:2px;}
+.tab.active{background:#e21b23;font-weight:bold;}
+.tab-content{display:none;background:#1a1a1a;padding:15px;border-radius:0 0 8px 8px;}
+input,select,button{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:none;font-size:16px;}
+input,select{background:#222;color:#fff;}
+button{background:#e21b23;color:#fff;cursor:pointer;transition:0.3s;}
+button:hover{background:#ff2a33;}
+.answer{margin-top:20px;padding:15px;background:#111;border-left:5px solid #e21b23;border-radius:8px;}
+.title{font-size:20px;font-weight:bold;color:#e21b23;}
+.confidence{font-size:14px;margin-top:6px;font-weight:bold;padding:4px 8px;border-radius:4px;display:inline-block;}
+.steps li{margin-bottom:6px;}
+</style>
+</head>
+<body>
+<header>🔧 GT‑R R34 Smart Diagnosis</header>
+<div class="container">
+<div class="tabs">
+<div class="tab" onclick="openTab(event,'Search')">Cari Gejala</div>
+<div class="tab" onclick="openTab(event,'Category')">Pilih Kategori</div>
+</div>
+
+<div id="Search" class="tab-content">
+<label>Ketik gejala masalah:</label>
+<input type="text" id="searchInput" placeholder="contoh: overheating, turbo lag, misfire">
+<button onclick="searchProblem()">Cari</button>
+<div id="searchResult"></div>
+</div>
+
+<div id="Category" class="tab-content">
+<label>Pilih kategori masalah:</label>
+<select id="categorySelect">
+<option value="">-- Pilih Masalah --</option>
+</select>
+<button onclick="showCategory()">Cari</button>
+<div id="categoryResult"></div>
+</div>
+</div>
+
 <script>
-// Dataset
+// -------------------------
+// DATASET LENGKAP
+// -------------------------
 const dataset = [
-    {
-        "title":"Overheating / Sistem Pendingin RB26",
-        "problem":"Mesin cepat panas, suhu air naik terutama saat boost tinggi atau lalu lintas padat.",
-        "indications":["Level coolant rendah atau campuran tidak tepat","Kipas pendingin tidak menyala","Thermostat macet atau water pump lemah","Radiator/intercooler tersumbat"],
-        "solution":"Periksa level & campuran coolant, radiator/intercooler, thermostat, water pump, fan & sensor suhu.",
-        "steps":["Cek level coolant dan campurannya; tambah/ganti jika rendah atau kotor","Periksa radiator cap dan kondisi radiator","Periksa fan, relay, dan sensor suhu","Cek thermostat dan water pump; ganti jika rusak","Flush radiator/intercooler jika tersumbat","Bleed sistem pendingin untuk buang udara","Cek head gasket jika overheating berulang"]
-    },
-    {
-        "title":"Turbo Lag / Boost Leak",
-        "problem":"Respon turbo lambat, kehilangan boost, muncul suara 'hissing'.",
-        "indications":["Suara 'hissing' saat akselerasi boost","Boost gauge drop tiba-tiba","Coupler intercooler kendor atau berbalon"],
-        "solution":"Periksa semua coupler intercooler & turbo, hose vakum, clamp, intercooler core.",
-        "steps":["Dengarkan suara 'hissing' saat boost","Periksa coupler intercooler & turbo; pastikan kencang","Periksa hose vakum dan vacuum line; ganti yang retak","Pressure test intake/intercooler","Cek kondisi turbo, shaft play, oil supply"]
-    }
-    // Tambahkan seluruh dataset lain di sini sesuai PHP
+    {"title":"Overheating / Sistem Pendingin RB26","problem":"Mesin cepat panas, suhu air naik terutama saat boost tinggi atau lalu lintas padat.","indications":["Level coolant rendah atau campuran tidak tepat","Kipas pendingin tidak menyala","Thermostat macet atau water pump lemah","Radiator/intercooler tersumbat"],"solution":"Periksa level & campuran coolant, radiator/intercooler, thermostat, water pump, fan & sensor suhu.","steps":["Cek level coolant dan campurannya; tambah/ganti jika rendah atau kotor","Periksa radiator cap dan kondisi radiator","Periksa fan, relay, dan sensor suhu","Cek thermostat dan water pump; ganti jika rusak","Flush radiator/intercooler jika tersumbat","Bleed sistem pendingin untuk buang udara","Cek head gasket jika overheating berulang"]},
+    {"title":"Turbo Lag / Boost Leak","problem":"Respon turbo lambat, kehilangan boost, muncul suara 'hissing'.","indications":["Suara 'hissing' saat akselerasi boost","Boost gauge drop tiba-tiba","Coupler intercooler kendor atau berbalon"],"solution":"Periksa semua coupler intercooler & turbo, hose vakum, clamp, intercooler core.","steps":["Dengarkan suara 'hissing' saat boost","Periksa coupler intercooler & turbo; pastikan kencang","Periksa hose vakum dan vacuum line; ganti yang retak","Pressure test intake/intercooler","Cek kondisi turbo, shaft play, oil supply"]},
+    {"title":"Ignition Coil / Misfire","problem":"Idle tidak stabil, backfire, tenaga drop.","indications":["Pemeriksaan busi menunjukkan aus atau kotor","Engine scan error P0300-P0306","Tenaga drop saat akselerasi"],"solution":"Ganti coil pack yang lemah, ganti busi, cek wiring & ground.","steps":["Cek busi: warna dan kondisi electrode","Periksa coil pack: ukur resistansi","Periksa wiring & ground coil","Ganti coil dan busi jika perlu","Tes idle dan performa setelah penggantian"]},
+    {"title":"Fuel Pump Lemah / Tekanan Tidak Stabil","problem":"Tenaga drop saat high boost, stuttering.","indications":["Tekanan bahan bakar rendah saat high load","Relay fuel pump panas atau bau terbakar","Filter bensin tersumbat"],"solution":"Periksa tekanan bahan bakar, relay, filter, ganti fuel pump jika lemah.","steps":["Ukur tekanan bahan bakar saat idle & full load","Periksa relay fuel pump & fuse","Cek filter bensin, bersihkan/ganti jika tersumbat","Ganti fuel pump jika tekanan drop saat high boost"]},
+    {"title":"Gearbox Crunch / Synchro Rusak","problem":"Suara grinding saat masuk gigi, susah masuk gigi 2/3.","indications":["Grinding saat shifting ke gigi 2 atau 3","Oli gearbox sudah lama atau gelap","Perpindahan gigi terasa kasar"],"solution":"Periksa oli gearbox, ganti oli, rebuild transmisi jika synchro aus.","steps":["Cek level & jenis oli gearbox","Ganti oli sesuai rekomendasi","Masuk gigi pelan-pelan, dengarkan grinding","Jika synchro aus, rebuild transmisi"]},
+    {"title":"Clutch Slip","problem":"RPM naik tapi mobil tidak maju sesuai, terutama saat high boost.","indications":["Pedal kopling lebih lembek atau travel bertambah","RPM naik tapi akselerasi kurang","Hydraulic master/slave bermasalah"],"solution":"Periksa wear plate, pressure plate, flywheel, hydraulic system; ganti kopling jika aus.","steps":["Tes akselerasi, perhatikan RPM vs akselerasi","Cek hydraulic master/slave cylinder","Periksa wear plate, pressure plate, flywheel","Ganti kopling sesuai stage mesin","Bleed sistem hidrolik jika hydraulic slip"]},
+    {"title":"Vacuum Leak / Idle Tidak Stabil","problem":"Idle drop, suara hiss, boost tidak stabil.","indications":["Suara hiss di throttle body saat idle","Hose vakum atau coupler intake retak/kendor","Boost tidak stabil"],"solution":"Periksa semua hose vakum, gasket, lakukan smoke test.","steps":["Dengarkan suara hiss saat idle","Periksa hose vakum, gasket, coupler","Lakukan smoke test jika perlu","Ganti gasket/hose bocor","Cek kembali idle dan boost response"]},
+    {"title":"Electrical / ECU & Wiring Faults","problem":"MFD mati, immobiliser tidak bekerja, ECU error, panel instrumen rusak.","indications":["Fuse atau relay terbakar","Ground bodi mesin korosi/lepas","Scanner menunjukkan error ECU"],"solution":"Periksa sambungan ground & kabel baterai, fuse & relay, modul ECU/immobiliser, ganti panel instrumen jika rusak.","steps":["Periksa terminal baterai dan bersihkan kontak","Cek fuse dan relay terkait ECU","Periksa kabel ground bodi mesin & rangka","Gunakan scanner diagnostic untuk membaca error ECU","Ganti panel instrumen atau MFD jika rusak"]},
+    {"title":"Radiator / Coolant Leak","problem":"Kebocoran pada radiator atau selang coolant menyebabkan mesin cepat panas.","indications":["Cairan coolant menetes di bawah mobil","Suhu mesin naik cepat","Aroma panas atau coolant terbakar"],"solution":"Periksa semua selang, clamp, dan radiator; ganti bagian yang bocor.","steps":["Periksa selang & clamp radiator","Cek radiator untuk retak atau bocor","Ganti bagian yang rusak","Isi ulang coolant dan bleed sistem"]},
+    {"title":"Intercooler Clogged","problem":"Intercooler tersumbat menurunkan performa dan membuat turbo lambat.","indications":["Boost naik lambat","Tenaga drop saat high rpm","Check boost leak muncul"],"solution":"Bersihkan intercooler atau ganti jika tersumbat parah.","steps":["Lepas intercooler","Cuci dengan pressure air atau chemical cleaner","Pasang kembali dan cek boost"]},
+    {"title":"Water Pump Failure","problem":"Water pump aus menyebabkan pendinginan mesin tidak optimal.","indications":["Mesin cepat panas","Suara berdecit dari pompa","Coolant sirkulasi lambat"],"solution":"Ganti water pump dan periksa pulley serta belt.","steps":["Lepas pompa lama","Pasang pompa baru dan seal","Periksa belt dan pulley","Isi coolant dan bleed"]},
+    {"title":"Oil Leak / Seal Rusak","problem":"Bocornya oli mesin, gearbox, atau differential.","indications":["Oli menetes di bawah mobil","Level oli cepat berkurang","Bau oli terbakar"],"solution":"Periksa gasket, seal, dan cover; ganti yang bocor.","steps":["Identifikasi sumber bocor","Ganti gasket atau seal yang rusak","Periksa level oli setelah penggantian"]},
+    {"title":"Battery / Alternator Issue","problem":"Baterai cepat habis atau alternator tidak mengisi.","indications":["Lampu dashboard redup","Mobil sulit starter","Multimeter menunjukkan tegangan <12V saat idle"],"solution":"Periksa alternator, kabel, dan baterai; ganti jika rusak.","steps":["Tes baterai dengan multimeter","Periksa kabel & terminal","Tes alternator output","Ganti komponen yang rusak"]},
+    {"title":"Exhaust Leak","problem":"Kebocoran pada manifold atau pipa knalpot.","indications":["Suara berisik / mendesis di bawah kap","Tenaga mesin sedikit drop","Bau gas keluar dari ruang mesin"],"solution":"Periksa exhaust gasket dan pipa, kencangkan atau ganti.","steps":["Identifikasi titik bocor","Ganti gasket atau pipa","Cek kembali suara dan tenaga"]},
+    {"title":"Brake Wear / Disc & Pad","problem":"Rem aus menyebabkan braking tidak optimal.","indications":["Pedal rem terasa empuk","Rem berdecit","Jarak berhenti lebih panjang"],"solution":"Periksa disc dan pad; ganti jika aus.","steps":["Cek ketebalan pad & disc","Ganti pad atau disc jika tipis/aus","Bleed sistem rem"]},
+    {"title":"Suspension / Shock Absorber","problem":"Shock absorber atau bushing aus, getaran dan handling buruk.","indications":["Getaran saat jalan tidak rata","Mobil limbung di tikungan","Bunyi knocking di suspensi"],"solution":"Ganti shock absorber atau bushing yang aus.","steps":["Cek kondisi shock absorber & bushing","Ganti komponen yang rusak","Test handling mobil"]},
+    {"title":"Wheel Alignment / Tire Wear","problem":"Kemudi miring atau keausan ban tidak merata.","indications":["Kemudi terasa tarik ke satu sisi","Ban aus tidak merata","Handling tidak stabil"],"solution":"Lakukan wheel alignment dan periksa tekanan ban.","steps":["Periksa tekanan ban","Lakukan wheel alignment","Cek apakah gejala hilang"]},
+    {"title":"Differential / LSD Issue","problem":"LSD aus atau gigi differential aus menyebabkan suara aneh dan slip saat cornering.","indications":["Suara klik atau grind saat cornering","Slip saat akselerasi keluar tikungan","Minyak diferensial bocor"],"solution":"Periksa differential, ganti oli dan komponen aus.","steps":["Cek suara differential saat test drive","Periksa oli dan seal differential","Ganti komponen yang aus","Isi oli baru sesuai spec"]},
+    {"title":"Fuel Injector Clogged","problem":"Injector tersumbat menyebabkan mesin tersendat atau misfire.","indications":["Idle tidak stabil","Tenaga drop saat akselerasi","Engine scan error P0300-P0306"],"solution":"Bersihkan injector atau ganti jika rusak.","steps":["Gunakan fuel injector cleaner","Periksa spray pattern injector","Ganti injector jika masih bermasalah","Test performa mesin"]},
+    {"title":"Turbo Oil Seal Leak","problem":"Seal turbo bocor menyebabkan asap biru atau putih dari knalpot.","indications":["Asap biru atau putih saat akselerasi","Minyak turbo berkurang","Turbo noise meningkat"],"solution":"Ganti oil seal turbo dan periksa bearing.","steps":["Periksa oil feed & return line","Ganti turbo seal & bearing","Isi ulang oli turbo","Cek performa turbo"]},
+    {"title":"Catalytic Converter Clogged","problem":"Catalytic converter tersumbat menyebabkan tenaga drop dan check engine menyala.","indications":["Tenaga drop terutama di high rpm","Check engine menyala","Exhaust backpressure tinggi"],"solution":"Cuci catalytic converter atau ganti jika tersumbat parah.","steps":["Test backpressure exhaust","Cuci catalytic converter","Ganti jika masih tersumbat","Test performa mesin"]},
+    {"title":"Air Conditioning / AC Problem","problem":"AC tidak dingin atau blower tidak bekerja.","indications":["Blower tidak keluar udara","Udara tidak dingin","Suara berdecit saat AC menyala"],"solution":"Periksa kompresor, refrigerant, fan, dan kabel listrik AC.","steps":["Periksa level refrigerant","Tes kompresor AC","Cek blower & motor fan","Periksa wiring dan fuse AC"]},
+    {"title":"ECU / Sensor Malfunction","problem":"Sensor atau ECU rusak menyebabkan engine warning atau idle bermasalah.","indications":["Check engine menyala","Idle tidak stabil","Error sensor di scanner"],"solution":"Periksa sensor utama (MAP, TPS, O2) dan koneksi ECU.","steps":["Gunakan OBD2 scanner untuk baca error","Periksa koneksi kabel sensor & ECU","Ganti sensor yang rusak","Reset ECU dan test idle/performa"]},
+    {"title":"Immobiliser / Key Fault","problem":"Mobil tidak bisa start karena immobiliser bermasalah.","indications":["Engine tidak menyala saat kunci diputar","Lampu immobiliser berkedip","Scanner menunjukkan error immobiliser"],"solution":"Reset immobiliser atau ganti kunci/receiver.","steps":["Periksa baterai kunci & receiver","Reset immobiliser sesuai manual","Ganti kunci atau receiver jika masih bermasalah"]},
+    {"title":"MFD / Dashboard Display Failure","problem":"MFD atau panel instrumen tidak menampilkan data atau mati.","indications":["Tampilan MFD mati atau berkedip","Beberapa indikator tidak menyala","Error code muncul di scanner"],"solution":"Periksa koneksi listrik MFD, ganti fuse atau modul MFD.","steps":["Cek koneksi kabel & fuse MFD","Test voltase input MFD","Ganti modul MFD jika rusak"]},
+    {"title":"Vacuum Pump / Hose Leak","problem":"Hose vakum bocor menyebabkan boost tidak stabil dan brake assist kurang.","indications":["Boost tidak stabil","Brake pedal lebih keras","Suara hiss dari selang vakum"],"solution":"Periksa semua hose vakum, ganti yang bocor.","steps":["Dengarkan suara hiss saat idle","Periksa semua hose vakum dan konektor","Ganti hose atau gasket bocor","Cek boost dan brake assist"]},
+    {"title":"Throttle Body / Sensor TPS Issue","problem":"Throttle body atau TPS bermasalah menyebabkan throttle lag atau idle drop.","indications":["Idle drop","Throttle respon lambat","Engine warning muncul"],"solution":"Bersihkan throttle body dan periksa sensor TPS.","steps":["Bersihkan throttle body dari karbon","Tes sensor TPS dengan multimeter","Ganti TPS jika error","Reset ECU dan test throttle respon"]},
+    {"title":"Exhaust Manifold Crack","problem":"Crack pada manifold menyebabkan suara berisik dan loss tenaga.","indications":["Suara berdecit saat engine panas","Tenaga drop","Asap tipis keluar dari celah manifold"],"solution":"Periksa manifold, las atau ganti jika retak.","steps":["Lepas manifold dan periksa retak","Las atau ganti manifold","Cek kembali suara & performa"]}
 ];
+
+// -------------------------
+// UTILITIES
+// -------------------------
+function preprocess(text){
+    text = text.toLowerCase().trim();
+    text = text.replace(/[^a-z0-9\s]/g," ");
+    const words = text.split(/\s+/);
+    const stopwords = ["dan","yang","pada","saat","karena","itu","di","ke","dengan","atau","adalah","untuk","dari","ada","saya","kamu","mobil"];
+    return words.filter(w=> w.length>1 && !stopwords.includes(w));
+}
+
+function toFreqVector(tokens){
+    const freq = {};
+    tokens.forEach(t=> freq[t] = (freq[t]||0)+1);
+    return freq;
+}
+
+function cosineSimilarity(tokensA,tokensB){
+    if(tokensA.length===0 || tokensB.length===0) return 0.0;
+    const vecA = toFreqVector(tokensA);
+    const vecB = toFreqVector(tokensB);
+    let dot=0, normA=0, normB=0;
+    for(let term in vecA){
+        normA += vecA[term]*vecA[term];
+        if(vecB[term]) dot += vecA[term]*vecB[term];
+    }
+    for(let term in vecB) normB += vecB[term]*vecB[term];
+    return dot/(Math.sqrt(normA)*Math.sqrt(normB));
+}
+
+function confidenceColor(score){
+    if(score>0.7) return "#4CAF50";
+    if(score>0.4) return "#FFC107";
+    return "#F44336";
+}
 
 // Isi dropdown kategori
 const categorySelect = document.getElementById("categorySelect");
@@ -126,3 +226,4 @@ function formatAnswer(item){
 </script>
 </body>
 </html>
+
